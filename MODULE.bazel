@@ -1,14 +1,48 @@
 module(name = "your_project_name_here", version = "0.1")
 
+bazel_dep(name = "rules_nixpkgs_posix", version = "0.10.0")
+archive_override(
+    module_name = "rules_nixpkgs_posix",
+    integrity = "sha256-mA7fzu8uWeESLZvmxSQTvCmENfCj1FJTK4pI11Yv/Wc=",
+    strip_prefix = "rules_nixpkgs-0.10.0/toolchains/posix",
+    urls = ["https://github.com/tweag/rules_nixpkgs/releases/download/v0.10.0/rules_nixpkgs-0.10.0.tar.gz"],
+)
 bazel_dep(name = "rules_haskell", version = "0.19")
+bazel_dep(name = "rules_haskell_nix", version = "0.19")
+archive_override(
+    module_name = "rules_haskell_nix",
+    integrity = "sha256-J88OdrV8P6lWf1nVxzwcpzcQMKohoakdze0K3SFzwzU=",
+    strip_prefix = "rules_haskell-0.19/rules_haskell_nix/",
+    urls = ["https://github.com/tweag/rules_haskell/archive/refs/tags/v0.19.tar.gz"],
+)
 bazel_dep(name = "rules_cc", version = "0.0.9")
-
-haskell_toolchains = use_extension(
-    "@rules_haskell//extensions:haskell_toolchains.bzl",
-    "haskell_toolchains",
+bazel_dep(name = "rules_nixpkgs_core", version = "0.11.1")
+bazel_dep( name = "rules_nixpkgs_cc", version = "0.11.1")
+archive_override(
+    module_name = "rules_nixpkgs_cc",
+    integrity = "sha256-KlVTSNf4WT/KK/P8bOU8XWKSnegbbCkuI/FsVXwK5Fo=",
+    strip_prefix = "rules_nixpkgs-0.11.1/toolchains/cc",
+    urls = ["https://github.com/tweag/rules_nixpkgs/releases/download/v0.11.1/rules_nixpkgs-0.11.1.tar.gz"],
 )
 
-haskell_toolchains.bindists(version = "9.2.8")
+bazel_dep( name = "rules_nixpkgs_python", version = "0.11.1")
+archive_override(
+    module_name = "rules_nixpkgs_python",
+    integrity = "sha256-KlVTSNf4WT/KK/P8bOU8XWKSnegbbCkuI/FsVXwK5Fo=",
+    strip_prefix = "rules_nixpkgs-0.11.1/toolchains/python",
+    urls = ["https://github.com/tweag/rules_nixpkgs/releases/download/v0.11.1/rules_nixpkgs-0.11.1.tar.gz"],
+)
+
+nix_haskell_toolchains = use_extension(
+    "@rules_haskell_nix//extensions:nix_haskell_toolchains.bzl",
+    "nix_haskell_toolchains",
+)
+nix_haskell_toolchains.new(
+    attribute_path = "",
+    nix_file_content = """with import <nixpkgs> {}; haskell.packages.ghc946.ghc""",
+    repository = "@nixpkgs",
+    version = "9.4.6",
+)
 
 non_module_deps = use_extension(
     "//:non_module_deps.bzl",
@@ -17,6 +51,7 @@ non_module_deps = use_extension(
 
 use_repo(
     non_module_deps,
+    "nixpkgs",
     "zlib.dev",
 )
 
