@@ -12,6 +12,7 @@
     in pkgs.mkShell {
       buildInputs = [
         pkgs.bazel
+        pkgs.nix
       ];
     };
   });
