@@ -18,11 +18,13 @@ def _non_module_deps_impl(_mctx):
     )
 
     nixpkgs_cc_configure(
+        name = "local_config_cc",
         repository = "@nixpkgs",
         register = False,
     )
 
     nixpkgs_python_configure(
+        name = "nixpkgs_python_toolchain",
         repository = "@nixpkgs",
         register = False,
     )

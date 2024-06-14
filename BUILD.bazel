@@ -29,5 +29,9 @@ haskell_toolchain_library(name = "base")
 haskell_binary(
     name = "example",
     srcs = [":Example.hs"],
-    deps = [":base", "@stackage//:zlib"],
+    deps = [
+      "@stackage//:base",
+      "@stackage//:containers",
+      "@stackage//:zlib",
+    ],
 )

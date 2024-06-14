@@ -1,23 +1,15 @@
 module(name = "your_project_name_here", version = "0.1")
 
-bazel_dep(name = "rules_nixpkgs_posix", version = "0.10.0")
+# Archive overrides
+###################
+
 archive_override(
     module_name = "rules_nixpkgs_posix",
     integrity = "sha256-mA7fzu8uWeESLZvmxSQTvCmENfCj1FJTK4pI11Yv/Wc=",
     strip_prefix = "rules_nixpkgs-0.10.0/toolchains/posix",
     urls = ["https://github.com/tweag/rules_nixpkgs/releases/download/v0.10.0/rules_nixpkgs-0.10.0.tar.gz"],
 )
-bazel_dep(name = "rules_haskell", version = "0.19")
-bazel_dep(name = "rules_haskell_nix", version = "0.19")
-archive_override(
-    module_name = "rules_haskell_nix",
-    integrity = "sha256-J88OdrV8P6lWf1nVxzwcpzcQMKohoakdze0K3SFzwzU=",
-    strip_prefix = "rules_haskell-0.19/rules_haskell_nix/",
-    urls = ["https://github.com/tweag/rules_haskell/archive/refs/tags/v0.19.tar.gz"],
-)
-bazel_dep(name = "rules_cc", version = "0.0.9")
-bazel_dep(name = "rules_nixpkgs_core", version = "0.11.1")
-bazel_dep( name = "rules_nixpkgs_cc", version = "0.11.1")
+
 archive_override(
     module_name = "rules_nixpkgs_cc",
     integrity = "sha256-KlVTSNf4WT/KK/P8bOU8XWKSnegbbCkuI/FsVXwK5Fo=",
@@ -25,13 +17,51 @@ archive_override(
     urls = ["https://github.com/tweag/rules_nixpkgs/releases/download/v0.11.1/rules_nixpkgs-0.11.1.tar.gz"],
 )
 
-bazel_dep( name = "rules_nixpkgs_python", version = "0.11.1")
 archive_override(
     module_name = "rules_nixpkgs_python",
     integrity = "sha256-KlVTSNf4WT/KK/P8bOU8XWKSnegbbCkuI/FsVXwK5Fo=",
     strip_prefix = "rules_nixpkgs-0.11.1/toolchains/python",
     urls = ["https://github.com/tweag/rules_nixpkgs/releases/download/v0.11.1/rules_nixpkgs-0.11.1.tar.gz"],
 )
+
+archive_override(
+    module_name = "rules_haskell_nix",
+    integrity = "sha256-J88OdrV8P6lWf1nVxzwcpzcQMKohoakdze0K3SFzwzU=",
+    strip_prefix = "rules_haskell-0.19/rules_haskell_nix/",
+    urls = ["https://github.com/tweag/rules_haskell/archive/refs/tags/v0.19.tar.gz"],
+)
+
+
+# Dependencies
+##############
+
+bazel_dep(name = "platforms", version = "0.0.10")
+bazel_dep(name = "rules_nixpkgs_posix", version = "0.10.0")
+bazel_dep(name = "rules_cc", version = "0.0.9")
+bazel_dep(name = "rules_nixpkgs_core", version = "0.11.1")
+bazel_dep(name = "rules_nixpkgs_cc", version = "0.11.1")
+bazel_dep(name = "rules_nixpkgs_python", version = "0.11.1")
+
+# Important! rules_haskell_nix BEFORE rules_haskell
+bazel_dep(name = "rules_haskell_nix", version = "0.19")
+bazel_dep(name = "rules_haskell", version = "0.19")
+
+# Toolchains
+############
+
+non_module_deps = use_extension(
+  "//:non_module_deps.bzl",
+  "non_module_deps"
+)
+use_repo(
+  non_module_deps,
+  "nixpkgs",
+  "local_config_cc_info",
+  "local_config_cc_toolchains",
+  "nixpkgs_python_toolchain",
+)
+register_toolchains("@local_config_cc_toolchains//:all")
+register_toolchains("@nixpkgs_python_toolchain//:toolchain")
 
 nix_haskell_toolchains = use_extension(
     "@rules_haskell_nix//extensions:nix_haskell_toolchains.bzl",
@@ -42,17 +72,6 @@ nix_haskell_toolchains.new(
     nix_file_content = """with import <nixpkgs> {}; haskell.packages.ghc946.ghc""",
     repository = "@nixpkgs",
     version = "9.4.6",
-)
-
-non_module_deps = use_extension(
-    "//:non_module_deps.bzl",
-    "non_module_deps",
-)
-
-use_repo(
-    non_module_deps,
-    "nixpkgs",
-    "zlib.dev",
 )
 
 stack = use_extension(
@@ -67,13 +86,28 @@ use_repo(
     "stackage-unpinned",
 )
 
+stack.snapshot(name = "lts-21.1")
+
+use_repo(non_module_deps, "zlib.dev")
 stack.package(
     name = "zlib",
     extra_deps = ["@zlib.dev//:zlib"],
 )
 
-# LTS snapshot published for ghc-9.2.8 (default version used by rules_haskell)
-stack.snapshot(name = "lts-20.26")
+[
+    stack.package(
+        name = package,
+    )
+    for package in [
+        "base",
+        "bytestring",
+        "containers",
+        "deepseq",
+        "mtl",
+        "text",
+        "vector",
+    ]
+]
 
 # This uses an unpinned version of stack_snapshot, meaning that stack is invoked on every build.
 # To switch to pinned stackage dependencies, run `bazel run @stackage-unpinned//:pin` and

@@ -6,7 +6,13 @@ test:ci --test_output=errors
 
 common --enable_bzlmod=true
 
+# This project uses a GHC provisioned via nix.
+# We need to use the rules_haskell nix toolchain accordingly:
+build --host_platform=@rules_nixpkgs_core//platforms:host
+run --host_platform=@rules_nixpkgs_core//platforms:host
+
 # Should become the default in bazel 7
+build --crosstool_top=@nixpkgs_config_cc//:toolchain
 build --incompatible_enable_cc_toolchain_resolution
 
 # Enable automatic OS-specific config (e.g. build:linux, build:macos, build:windows).
