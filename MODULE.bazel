@@ -94,23 +94,7 @@ stack.package(
     extra_deps = ["@zlib.dev//:zlib"],
 )
 
-[
-    stack.package(
-        name = package,
-    )
-    for package in [
-        "base",
-        "bytestring",
-        "containers",
-        "deepseq",
-        "mtl",
-        "text",
-        "vector",
-    ]
-]
-
 # This uses an unpinned version of stack_snapshot, meaning that stack is invoked on every build.
 # To switch to pinned stackage dependencies, run `bazel run @stackage-unpinned//:pin` and
 # uncomment the following line.
 #stack.stack_snapshot_json(label = "//:stackage_snapshot.json")
-
