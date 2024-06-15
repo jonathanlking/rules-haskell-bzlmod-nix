@@ -42,7 +42,7 @@ bazel_dep(name = "rules_nixpkgs_core", version = "0.11.1")
 bazel_dep(name = "rules_nixpkgs_cc", version = "0.11.1")
 bazel_dep(name = "rules_nixpkgs_python", version = "0.11.1")
 
-# Important! rules_haskell_nix BEFORE rules_haskell
+# Important! rules_haskell_nix must be loaded BEFORE rules_haskell
 bazel_dep(name = "rules_haskell_nix", version = "0.19")
 bazel_dep(name = "rules_haskell", version = "0.19")
 
@@ -86,15 +86,21 @@ use_repo(
     "stackage-unpinned",
 )
 
-stack.snapshot(name = "lts-21.1")
+use_repo(
+    non_module_deps,
+    "zlib.dev",
+)
 
-use_repo(non_module_deps, "zlib.dev")
 stack.package(
     name = "zlib",
     extra_deps = ["@zlib.dev//:zlib"],
 )
 
+# LTS snapshot published for ghc-9.4.6 (default version used by rules_haskell)
+stack.snapshot(name = "lts-21.5")
+
 # This uses an unpinned version of stack_snapshot, meaning that stack is invoked on every build.
 # To switch to pinned stackage dependencies, run `bazel run @stackage-unpinned//:pin` and
 # uncomment the following line.
 #stack.stack_snapshot_json(label = "//:stackage_snapshot.json")
+

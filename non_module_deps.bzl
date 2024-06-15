@@ -7,7 +7,6 @@ load(
     "nixpkgs_package",
 )
 load("@rules_nixpkgs_python//:python.bzl", "nixpkgs_python_configure")
-
 def _non_module_deps_impl(_mctx):
     # Fetch a version of nixpkgs from GitHub.
     # For more information see the documentation of rules_nixpkgs at
@@ -16,30 +15,25 @@ def _non_module_deps_impl(_mctx):
         name = "nixpkgs",
         revision = "nixos-23.11",
     )
-
     nixpkgs_cc_configure(
         name = "local_config_cc",
         repository = "@nixpkgs",
         register = False,
     )
-
     nixpkgs_python_configure(
         name = "nixpkgs_python_toolchain",
         repository = "@nixpkgs",
         register = False,
     )
-
     # For zlib.BUILD.bazel
     nixpkgs_package(
         name = "nixpkgs_zlib",
         attribute_path = "zlib",
         repository = "@nixpkgs",
     )
-
     nixpkgs_package(
         name = "zlib.dev",
         build_file = "//:zlib.BUILD.bazel",
         repository = "@nixpkgs",
     )
-
 non_module_deps = module_extension(implementation = _non_module_deps_impl)
